@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes import resumes
 from routes import screening
 from routes import interview
+from routes import auth
+
 
 app = FastAPI(title="AI Resume Screening API")
 
@@ -20,6 +22,7 @@ app.add_middleware(
 app.include_router(resumes.router, prefix="/api/resumes")
 app.include_router(screening.router, prefix="/api")
 app.include_router(interview.router, prefix="/api/interview")
+app.include_router(auth.router, prefix="/api/auth")
 
 @app.get("/")
 def root():
