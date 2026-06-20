@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+import os
+load_dotenv()
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -13,7 +16,7 @@ import uuid
 from database import get_db, Candidate
 
 router = APIRouter()
-client = Groq(api_key="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")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 UPLOAD_DIR = "uploaded_resumes"
 os.makedirs(UPLOAD_DIR, exist_ok=True)

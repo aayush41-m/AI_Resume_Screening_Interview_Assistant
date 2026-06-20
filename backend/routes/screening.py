@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+import os
+load_dotenv()
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from groq import Groq
@@ -8,7 +11,7 @@ import re
 from database import get_db, Candidate
 
 router = APIRouter()
-client = Groq(api_key="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")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 class ScreeningRequest(BaseModel):
     candidate_name: str
