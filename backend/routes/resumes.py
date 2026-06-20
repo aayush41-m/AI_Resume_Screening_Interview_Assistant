@@ -152,3 +152,105 @@ async def delete_candidate(candidate_id: int, db: Session = Depends(get_db)):
     db.delete(candidate)
     db.commit()
     return {"message": "Candidate deleted successfully"}
+@router.post("/bulk-upload")
+async def bulk_upload_and_screen(
+    candidate_names: str = Form(...),
+    job_role: str = Form(...),
+    job_description: str = Form(...),
+    files: list[UploadFile] = File(...),
+    db: Session = Depends(get_db)
+):
+    names_list = [n.strip() for n in candidate_names.split(",")]
+    results = []
+
+    for i, file in enumerate(files):
+        candidate_name = names_list[i] if i < len(names_list) else f"Candidate {i+1}"
+
+        content = await file.read()
+        resume_text = extract_text(file, content)
+
+        if not resume_text:
+            results.append({
+                "filename": file.filename,
+                "candidate_name": candidate_name,
+                "error": "Could not extract text from this file."
+            })
+            continue
+
+        file_ext = os.path.splitext(file.filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, unique_filename)
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an HR expert. Always respond with valid JSON only. No extra text."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""
+                        Analyze this resume against the job description carefully.
+
+                        Job Role: {job_role}
+                        Job Description: {job_description}
+
+                        Resume Content:
+                        {resume_text[:4000]}
+
+                        Respond with ONLY this JSON format:
+                        {{
+                            "score": <number 0-100 based on actual match>,
+                            "strengths": ["actual skill1 found in resume", "actual skill2"],
+                            "missing_skills": ["skill1 missing", "skill2 missing"],
+                            "recommendation": "Shortlisted" or "Rejected" or "Pending",
+                            "summary": "2-3 line summary based on actual resume content"
+                        }}
+                        """
+                    }
+                ]
+            )
+
+            text_response = response.choices[0].message.content.strip()
+            text_response = re.sub(r'```json\n?', '', text_response)
+            text_response = re.sub(r'```\n?', '', text_response)
+            text_response = text_response.strip()
+            result = json.loads(text_response)
+
+            new_candidate = Candidate(
+                name=candidate_name,
+                role=job_role,
+                score=result["score"],
+                status=result["recommendation"],
+                strengths=", ".join(result["strengths"]),
+                missing_skills=", ".join(result["missing_skills"]),
+                summary=result["summary"],
+                resume_filename=file.filename,
+                resume_path=file_path
+            )
+            db.add(new_candidate)
+            db.commit()
+            db.refresh(new_candidate)
+
+            results.append({
+                "candidate_id": new_candidate.id,
+                "candidate_name": candidate_name,
+                "filename": file.filename,
+                "score": result["score"],
+                "recommendation": result["recommendation"],
+                "status": "success"
+            })
+
+        except Exception as e:
+            results.append({
+                "filename": file.filename,
+                "candidate_name": candidate_name,
+                "error": str(e),
+                "status": "failed"
+            })
+
+    return {"total": len(files), "results": results}
