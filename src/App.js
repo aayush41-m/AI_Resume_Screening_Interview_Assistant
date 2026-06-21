@@ -8,6 +8,8 @@ import Interview from './pages/Interview';
 import Report from './pages/Report';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import CreateJob from './pages/CreateJob';
+import Apply from './pages/Apply';
 
 function isLoggedIn() {
   return !!localStorage.getItem('token');
@@ -25,16 +27,31 @@ function App() {
 
   return (
     <Router>
-      {loggedIn && <Navbar />}
       <Routes>
+        {/* Public route - no Navbar, no login required */}
+        <Route path="/apply/:jobId" element={<Apply />} />
+
         <Route path="/login" element={loggedIn ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/signup" element={loggedIn ? <Navigate to="/" replace /> : <Signup />} />
 
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
-        <Route path="/candidates" element={<ProtectedRoute><Candidates /></ProtectedRoute>} />
-        <Route path="/interview/:id" element={<ProtectedRoute><Interview /></ProtectedRoute>} />
-        <Route path="/report/:id" element={<ProtectedRoute><Report /></ProtectedRoute>} />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <>
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/upload" element={<Upload />} />
+                  <Route path="/candidates" element={<Candidates />} />
+                  <Route path="/interview/:id" element={<Interview />} />
+                  <Route path="/report/:id" element={<Report />} />
+                  <Route path="/jobs" element={<CreateJob />} />
+                </Routes>
+              </>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

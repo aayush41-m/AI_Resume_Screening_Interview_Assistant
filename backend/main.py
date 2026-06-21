@@ -4,6 +4,7 @@ from routes import resumes
 from routes import screening
 from routes import interview
 from routes import auth
+from routes import jobs
 
 
 app = FastAPI(title="AI Resume Screening API")
@@ -23,6 +24,7 @@ app.include_router(resumes.router, prefix="/api/resumes")
 app.include_router(screening.router, prefix="/api")
 app.include_router(interview.router, prefix="/api/interview")
 app.include_router(auth.router, prefix="/api/auth")
+app.include_router(jobs.router, prefix="/api/jobs")
 
 @app.get("/")
 def root():

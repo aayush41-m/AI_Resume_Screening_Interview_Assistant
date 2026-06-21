@@ -8,6 +8,7 @@ function Upload() {
   const [files, setFiles] = useState([]);
   const [jobDescription, setJobDescription] = useState('');
   const [candidateName, setCandidateName] = useState('');
+  const [candidateEmail, setCandidateEmail] = useState('');
   const [jobRole, setJobRole] = useState('Software Engineer');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -34,7 +35,7 @@ function Upload() {
     setBulkNames(updated);
   };
 
-  const handleScreen = async () => {
+ const handleScreen = async () => {
     if (files.length === 0 || !jobDescription.trim() || !candidateName.trim()) {
       alert('Please add candidate name, job description, and upload a resume file');
       return;
@@ -44,7 +45,7 @@ function Upload() {
     setResult(null);
 
     try {
-      const data = await screenResume(candidateName, jobRole, jobDescription, files[0]);
+      const data = await screenResume(candidateName, candidateEmail, jobRole, jobDescription, files[0]);
       if (data.error) {
         alert(data.error);
       } else {
@@ -137,11 +138,21 @@ function Upload() {
             <h3 className="text-lg font-bold text-blue-900 mb-2">Candidate Name</h3>
             <input
               type="text"
-              className="w-full border rounded-lg p-3 text-gray-700"
+              className="w-full border rounded-lg p-3 text-gray-700 mb-4"
               placeholder="Enter candidate name..."
               value={candidateName}
               onChange={(e) => setCandidateName(e.target.value)}
             />
+
+            <h3 className="text-lg font-bold text-blue-900 mb-2">Candidate Email (Optional)</h3>
+            <input
+              type="email"
+              className="w-full border rounded-lg p-3 text-gray-700"
+              placeholder="candidate@example.com"
+              value={candidateEmail}
+              onChange={(e) => setCandidateEmail(e.target.value)}
+            />
+            <p className="text-gray-400 text-xs mt-1">If provided, candidate will receive an email with their result.</p>
           </div>
 
           <div className="bg-white rounded-xl shadow p-4 mb-6">

@@ -1,3 +1,4 @@
+from email_service import send_screening_result_email
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -38,6 +39,7 @@ def extract_text(file: UploadFile, content: bytes) -> str:
 @router.post("/upload")
 async def upload_and_screen(
     candidate_name: str = Form(...),
+    candidate_email: str = Form(""),
     job_role: str = Form(...),
     job_description: str = Form(...),
     file: UploadFile = File(...),
@@ -97,6 +99,7 @@ async def upload_and_screen(
     # Save to database
     new_candidate = Candidate(
         name=candidate_name,
+        email=candidate_email,
         role=job_role,
         score=result["score"],
         status=result["recommendation"],
@@ -111,6 +114,14 @@ async def upload_and_screen(
     db.refresh(new_candidate)
 
     result["candidate_id"] = new_candidate.id
+
+    # Send email notification if email provided
+    if candidate_email:
+        email_result = send_screening_result_email(
+            candidate_name, candidate_email, result["score"], result["recommendation"], result["summary"]
+        )
+        result["email_sent"] = email_result.get("success", False)
+
     return result
 
 
@@ -254,3 +265,89 @@ async def bulk_upload_and_screen(
             })
 
     return {"total": len(files), "results": results}
+@router.post("/apply")
+async def public_apply(
+    candidate_name: str = Form(...),
+    candidate_email: str = Form(...),
+    candidate_phone: str = Form(...),
+    job_id: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    from database import Job
+
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or no longer active")
+
+    content = await file.read()
+    resume_text = extract_text(file, content)
+
+    if not resume_text:
+        return {"error": "Could not extract text from this file. Please try a different PDF/DOCX."}
+
+    file_ext = os.path.splitext(file.filename)[1]
+    unique_filename = f"{uuid.uuid4()}{file_ext}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are an HR expert. Always respond with valid JSON only. No extra text."
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Analyze this resume against the job description carefully.
+
+                Job Role: {job.title}
+                Job Description: {job.description}
+
+                Resume Content:
+                {resume_text[:4000]}
+
+                Respond with ONLY this JSON format:
+                {{
+                    "score": <number 0-100 based on actual match>,
+                    "strengths": ["actual skill1 found in resume", "actual skill2"],
+                    "missing_skills": ["skill1 missing", "skill2 missing"],
+                    "recommendation": "Shortlisted" or "Rejected" or "Pending",
+                    "summary": "2-3 line summary based on actual resume content"
+                }}
+                """
+            }
+        ]
+    )
+
+    text_response = response.choices[0].message.content.strip()
+    text_response = re.sub(r'```json\n?', '', text_response)
+    text_response = re.sub(r'```\n?', '', text_response)
+    text_response = text_response.strip()
+    result = json.loads(text_response)
+
+    new_candidate = Candidate(
+        name=candidate_name,
+        email=candidate_email,
+        phone=candidate_phone,
+        role=job.title,
+        job_id=job.id,
+        score=result["score"],
+        status=result["recommendation"],
+        strengths=", ".join(result["strengths"]),
+        missing_skills=", ".join(result["missing_skills"]),
+        summary=result["summary"],
+        resume_filename=file.filename,
+        resume_path=file_path
+    )
+    db.add(new_candidate)
+    db.commit()
+    db.refresh(new_candidate)
+
+    return {
+        "message": "Application submitted successfully!",
+        "candidate_id": new_candidate.id
+    }

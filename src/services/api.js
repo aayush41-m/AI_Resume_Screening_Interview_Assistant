@@ -1,8 +1,9 @@
 const BASE_URL = "http://localhost:8000";
 
-export const screenResume = async (candidateName, jobRole, jobDescription, file) => {
+export const screenResume = async (candidateName, candidateEmail, jobRole, jobDescription, file) => {
   const formData = new FormData();
   formData.append("candidate_name", candidateName);
+  formData.append("candidate_email", candidateEmail);
   formData.append("job_role", jobRole);
   formData.append("job_description", jobDescription);
   formData.append("file", file);
@@ -105,6 +106,39 @@ export const bulkUploadResumes = async (candidateNames, jobRole, jobDescription,
   files.forEach((file) => formData.append("files", file));
 
   const response = await fetch(`${BASE_URL}/api/resumes/bulk-upload`, {
+    method: "POST",
+    body: formData,
+  });
+  return response.json();
+};
+export const createJob = async (title, description) => {
+  const response = await fetch(`${BASE_URL}/api/jobs/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, description }),
+  });
+  return response.json();
+};
+
+export const getAllJobs = async () => {
+  const response = await fetch(`${BASE_URL}/api/jobs/all`);
+  return response.json();
+};
+
+export const getJob = async (jobId) => {
+  const response = await fetch(`${BASE_URL}/api/jobs/${jobId}`);
+  return response.json();
+};
+
+export const submitApplication = async (name, email, phone, jobId, file) => {
+  const formData = new FormData();
+  formData.append("candidate_name", name);
+  formData.append("candidate_email", email);
+  formData.append("candidate_phone", phone);
+  formData.append("job_id", jobId);
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE_URL}/api/resumes/apply`, {
     method: "POST",
     body: formData,
   });

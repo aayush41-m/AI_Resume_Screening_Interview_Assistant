@@ -17,7 +17,8 @@ function Navbar() {
     <nav className="bg-blue-900 text-white px-6 py-4 flex justify-between items-center">
       <h1 className="text-xl font-bold">AI Recruiter</h1>
       <div className="flex gap-6 items-center">
-        <Link to="/" className="hover:text-blue-300">Dashboard</Link>
+       <Link to="/" className="hover:text-blue-300">Dashboard</Link>
+        <Link to="/jobs" className="hover:text-blue-300">Job Postings</Link>
         <Link to="/upload" className="hover:text-blue-300">Upload Resumes</Link>
         <Link to="/candidates" className="hover:text-blue-300">Candidates</Link>
         {user && (
