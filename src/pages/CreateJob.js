@@ -47,16 +47,72 @@ function CreateJob() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         >
-          <option>Software Engineer</option>
-          <option>Frontend Developer</option>
-          <option>Backend Developer</option>
-          <option>Full Stack Developer</option>
-          <option>Data Analyst</option>
-          <option>Data Scientist</option>
-          <option>UI/UX Designer</option>
-          <option>Product Manager</option>
-          <option>DevOps Engineer</option>
-          <option>QA Engineer</option>
+          <optgroup label="Software Development">
+            <option>Software Engineer</option>
+            <option>Frontend Developer</option>
+            <option>Backend Developer</option>
+            <option>Full Stack Developer</option>
+            <option>Mobile App Developer (Android)</option>
+            <option>Mobile App Developer (iOS)</option>
+            <option>React Developer</option>
+            <option>Java Developer</option>
+            <option>Python Developer</option>
+            <option>.NET Developer</option>
+            <option>PHP Developer</option>
+            <option>Game Developer</option>
+          </optgroup>
+          <optgroup label="Data & AI">
+            <option>Data Analyst</option>
+            <option>Data Scientist</option>
+            <option>Data Engineer</option>
+            <option>Machine Learning Engineer</option>
+            <option>AI Engineer</option>
+            <option>Business Intelligence Analyst</option>
+          </optgroup>
+          <optgroup label="DevOps & Infrastructure">
+            <option>DevOps Engineer</option>
+            <option>Cloud Engineer</option>
+            <option>Site Reliability Engineer (SRE)</option>
+            <option>System Administrator</option>
+            <option>Network Engineer</option>
+          </optgroup>
+          <optgroup label="Quality & Testing">
+            <option>QA Engineer</option>
+            <option>Automation Test Engineer</option>
+            <option>Manual Tester</option>
+          </optgroup>
+          <optgroup label="Design">
+            <option>UI/UX Designer</option>
+            <option>Graphic Designer</option>
+            <option>Product Designer</option>
+          </optgroup>
+          <optgroup label="Management">
+            <option>Product Manager</option>
+            <option>Project Manager</option>
+            <option>Scrum Master</option>
+            <option>Engineering Manager</option>
+            <option>Technical Lead</option>
+          </optgroup>
+          <optgroup label="Security & Database">
+            <option>Cybersecurity Analyst</option>
+            <option>Database Administrator (DBA)</option>
+            <option>Security Engineer</option>
+          </optgroup>
+          <optgroup label="Other Tech Roles">
+            <option>Blockchain Developer</option>
+            <option>IT Support Engineer</option>
+            <option>Technical Writer</option>
+            <option>Solutions Architect</option>
+          </optgroup>
+          <optgroup label="Fire & Safety">
+            <option>Fire Safety Officer</option>
+            <option>Fire and Safety Engineer</option>
+            <option>EHS Officer (Environment, Health & Safety)</option>
+            <option>Industrial Safety Officer</option>
+            <option>HSE Manager (Health, Safety & Environment)</option>
+            <option>Safety Inspector</option>
+            <option>Occupational Health & Safety Specialist</option>
+          </optgroup>
         </select>
 
         <h3 className="text-lg font-bold text-blue-900 mb-2">Job Description</h3>
