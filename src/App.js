@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import CreateJob from './pages/CreateJob';
 import Apply from './pages/Apply';
+import MouseEffect from './components/MouseEffect';
 
 function isLoggedIn() {
   return !!localStorage.getItem('token');
@@ -27,13 +28,11 @@ function App() {
 
   return (
     <Router>
+      <MouseEffect />
       <Routes>
-        {/* Public route - no Navbar, no login required */}
         <Route path="/apply/:jobId" element={<Apply />} />
-
         <Route path="/login" element={loggedIn ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/signup" element={loggedIn ? <Navigate to="/" replace /> : <Signup />} />
-
         <Route
           path="/*"
           element={

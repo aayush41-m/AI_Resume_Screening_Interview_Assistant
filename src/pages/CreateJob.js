@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Briefcase, Plus, Copy, Check, ExternalLink, Calendar, FileText } from 'lucide-react';
 import { createJob, getAllJobs } from '../services/api';
+import PageHeader from '../components/PageHeader';
+import Card, { CardHeader } from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { TextArea } from '../components/ui/Input';
+import JobRoleSelect from '../components/JobRoleSelect';
+import EmptyState from '../components/ui/EmptyState';
 
 function CreateJob() {
   const [title, setTitle] = useState('Software Engineer');
@@ -7,14 +14,19 @@ function CreateJob() {
   const [loading, setLoading] = useState(false);
   const [createdJob, setCreatedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     loadJobs();
   }, []);
 
   const loadJobs = async () => {
-    const data = await getAllJobs();
-    setJobs(data);
+    try {
+      const data = await getAllJobs();
+      setJobs(data || []);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleCreate = async () => {
@@ -23,159 +35,183 @@ function CreateJob() {
       return;
     }
     setLoading(true);
-    const data = await createJob(title, description);
-    setCreatedJob(data);
-    setDescription('');
-    await loadJobs();
+    try {
+      const data = await createJob(title, description);
+      setCreatedJob(data);
+      setDescription('');
+      await loadJobs();
+    } catch (e) {
+      alert('Error creating job: ' + e.message);
+    }
     setLoading(false);
   };
 
-  const copyLink = (jobId) => {
+  const copyLink = async (jobId, id) => {
     const link = `${window.location.origin}/apply/${jobId}`;
-    navigator.clipboard.writeText(link);
-    alert('Link copied to clipboard!');
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(id || jobId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      alert('Link copied to clipboard!');
+    }
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h2 className="text-2xl font-bold text-blue-900 mb-6">Create Job Posting</h2>
+    <div className="p-6 md:p-8 min-h-screen animate-fade-in" style={{ background: '#0f0a2e' }}>
+      <PageHeader
+        title="Job Postings"
+        subtitle="Create job postings and share apply links with candidates"
+        icon={Briefcase}
+      />
 
-      <div className="bg-white rounded-xl shadow p-4 mb-6">
-        <h3 className="text-lg font-bold text-blue-900 mb-2">Job Role</h3>
-        <select
-          className="w-full border rounded-lg p-3 text-gray-700 mb-4"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        >
-          <optgroup label="Software Development">
-            <option>Software Engineer</option>
-            <option>Frontend Developer</option>
-            <option>Backend Developer</option>
-            <option>Full Stack Developer</option>
-            <option>Mobile App Developer (Android)</option>
-            <option>Mobile App Developer (iOS)</option>
-            <option>React Developer</option>
-            <option>Java Developer</option>
-            <option>Python Developer</option>
-            <option>.NET Developer</option>
-            <option>PHP Developer</option>
-            <option>Game Developer</option>
-          </optgroup>
-          <optgroup label="Data & AI">
-            <option>Data Analyst</option>
-            <option>Data Scientist</option>
-            <option>Data Engineer</option>
-            <option>Machine Learning Engineer</option>
-            <option>AI Engineer</option>
-            <option>Business Intelligence Analyst</option>
-          </optgroup>
-          <optgroup label="DevOps & Infrastructure">
-            <option>DevOps Engineer</option>
-            <option>Cloud Engineer</option>
-            <option>Site Reliability Engineer (SRE)</option>
-            <option>System Administrator</option>
-            <option>Network Engineer</option>
-          </optgroup>
-          <optgroup label="Quality & Testing">
-            <option>QA Engineer</option>
-            <option>Automation Test Engineer</option>
-            <option>Manual Tester</option>
-          </optgroup>
-          <optgroup label="Design">
-            <option>UI/UX Designer</option>
-            <option>Graphic Designer</option>
-            <option>Product Designer</option>
-          </optgroup>
-          <optgroup label="Management">
-            <option>Product Manager</option>
-            <option>Project Manager</option>
-            <option>Scrum Master</option>
-            <option>Engineering Manager</option>
-            <option>Technical Lead</option>
-          </optgroup>
-          <optgroup label="Security & Database">
-            <option>Cybersecurity Analyst</option>
-            <option>Database Administrator (DBA)</option>
-            <option>Security Engineer</option>
-          </optgroup>
-          <optgroup label="Other Tech Roles">
-            <option>Blockchain Developer</option>
-            <option>IT Support Engineer</option>
-            <option>Technical Writer</option>
-            <option>Solutions Architect</option>
-          </optgroup>
-          <optgroup label="Fire & Safety">
-            <option>Fire Safety Officer</option>
-            <option>Fire and Safety Engineer</option>
-            <option>EHS Officer (Environment, Health & Safety)</option>
-            <option>Industrial Safety Officer</option>
-            <option>HSE Manager (Health, Safety & Environment)</option>
-            <option>Safety Inspector</option>
-            <option>Occupational Health & Safety Specialist</option>
-          </optgroup>
-        </select>
-
-        <h3 className="text-lg font-bold text-blue-900 mb-2">Job Description</h3>
-        <textarea
-          className="w-full border rounded-lg p-3 h-32 text-gray-700"
-          placeholder="Describe the role, requirements, skills needed..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+      {/* Create form */}
+      <Card className="mb-6">
+        <CardHeader
+          title="Create New Job"
+          subtitle="Pick a role and add a description"
+          icon={Plus}
         />
-      </div>
+        <div className="grid grid-cols-1 gap-4">
+          <JobRoleSelect value={title} onChange={setTitle} icon={Briefcase} />
+          <TextArea
+            label="Job Description"
+            placeholder="Describe the role, responsibilities, required skills, experience level..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="h-32 resize-none"
+          />
+        </div>
+        <Button
+          variant="primary"
+          size="lg"
+          icon={Plus}
+          loading={loading}
+          onClick={handleCreate}
+          className="w-full mt-5"
+        >
+          {loading ? 'Creating...' : 'Create Job & Get Link'}
+        </Button>
+      </Card>
 
-      <button
-        onClick={handleCreate}
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl text-lg font-bold hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? 'Creating...' : 'Create Job & Get Link'}
-      </button>
-
+      {/* Success */}
       {createdJob && (
-        <div className="bg-green-50 border border-green-300 rounded-xl p-6 mt-6">
-          <h3 className="font-bold text-green-800 mb-2">Job Created Successfully!</h3>
-          <p className="text-gray-600 text-sm mb-3">Share this link with candidates:</p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              readOnly
-              className="flex-1 border rounded-lg px-3 py-2 text-sm bg-white"
-              value={`${window.location.origin}/apply/${createdJob.id}`}
-            />
-            <button
-              onClick={() => copyLink(createdJob.id)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700"
+        <div className="mb-6 animate-slide-up">
+          <div
+            className="rounded-2xl p-5 flex items-start gap-4"
+            style={{
+              background: 'rgba(34,197,94,0.10)',
+              border: '1px solid rgba(34,197,94,0.30)',
+              boxShadow: '0 4px 20px rgba(34,197,94,0.10)',
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl text-white flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}
             >
-              Copy Link
-            </button>
+              <Check size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold mb-1" style={{ color: '#22c55e' }}>Job Created Successfully!</h3>
+              <p className="text-sm text-purple-300 mb-3">Share this link with candidates:</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={`${window.location.origin}/apply/${createdJob.id}`}
+                  className="flex-1 rounded-lg px-3 py-2 text-sm text-white"
+                  style={{
+                    background: 'rgba(15,10,46,0.60)',
+                    border: '1px solid rgba(34,197,94,0.30)',
+                  }}
+                />
+                <Button
+                  variant="success"
+                  size="md"
+                  icon={Copy}
+                  onClick={() => copyLink(createdJob.id, 'new')}
+                >
+                  {copiedId === 'new' ? 'Copied!' : 'Copy'}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow p-4 mt-8">
-        <h3 className="text-lg font-bold text-blue-900 mb-4">All Job Postings</h3>
+      {/* All jobs */}
+      <Card>
+        <CardHeader
+          title="All Job Postings"
+          subtitle={`${jobs.length} active posting${jobs.length === 1 ? '' : 's'}`}
+          icon={Briefcase}
+        />
         {jobs.length === 0 ? (
-          <p className="text-gray-400 text-sm">No jobs created yet.</p>
+          <EmptyState
+            icon={Briefcase}
+            title="No jobs created yet"
+            description="Create your first job posting to start collecting applications."
+          />
         ) : (
           <div className="space-y-3">
             {jobs.map((job) => (
-              <div key={job.id} className="border rounded-lg p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-gray-800">{job.title}</p>
-                  <p className="text-gray-500 text-sm truncate w-96">{job.description}</p>
+              <div
+                key={job.id}
+                className="group rounded-xl p-4 transition-all"
+                style={{
+                  background: 'rgba(15,10,46,0.40)',
+                  border: '1px solid rgba(139,92,246,0.20)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(139,92,246,0.10)';
+                  e.currentTarget.style.borderColor = 'rgba(139,92,246,0.40)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(15,10,46,0.40)';
+                  e.currentTarget.style.borderColor = 'rgba(139,92,246,0.20)';
+                }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'rgba(139,92,246,0.20)', color: '#a78bfa' }}
+                    >
+                      <FileText size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-white">{job.title}</p>
+                      <p className="text-sm text-purple-300 line-clamp-2 mt-1">{job.description}</p>
+                      <p className="text-xs text-purple-400 mt-2 inline-flex items-center gap-1">
+                        <Calendar size={12} />
+                        Created {job.created_at ? new Date(job.created_at).toLocaleDateString() : 'recently'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={ExternalLink}
+                      onClick={() => window.open(`/apply/${job.id}`, '_blank')}
+                    >
+                      Preview
+                    </Button>
+                    <Button
+                      variant={copiedId === job.id ? 'success' : 'primary'}
+                      size="sm"
+                      icon={copiedId === job.id ? Check : Copy}
+                      onClick={() => copyLink(job.id, job.id)}
+                    >
+                      {copiedId === job.id ? 'Copied!' : 'Copy Link'}
+                    </Button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => copyLink(job.id)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700"
-                >
-                  Copy Apply Link
-                </button>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

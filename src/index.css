@@ -1,3 +1,62 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background: #0f0a2e;
+    color: #f0eeff;
+    min-height: 100vh;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1a1040; }
+  ::-webkit-scrollbar-thumb { background: #6d28d9; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+}
+
+@layer components {
+  .skeleton {
+    @apply bg-gradient-to-r from-surface-muted via-surface-card to-surface-muted bg-[length:200%_100%] animate-shimmer rounded;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #a78bfa, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #3b0764 100%);
+  }
+  .glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139,92,246,0.20);
+  }
+  .card-dark {
+    background: rgba(26,16,64,0.80);
+    border: 1px solid rgba(139,92,246,0.20);
+    border-radius: 1.125rem;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.10);
+  }
+  .btn-purple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139,92,246,0.40);
+    transition: all 0.2s ease;
+  }
+  .btn-purple:hover {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    box-shadow: 0 6px 25px rgba(139,92,246,0.55);
+    transform: translateY(-1px);
+  }
+  .glow-border {
+    border: 1px solid rgba(139,92,246,0.40);
+    box-shadow: 0 0 15px rgba(139,92,246,0.15), inset 0 0 15px rgba(139,92,246,0.05);
+  }
+}

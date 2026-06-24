@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Mail, Lock, User, ArrowRight, AlertCircle, Sparkles, Check } from 'lucide-react';
 import { signup } from '../services/api';
+import Button from '../components/ui/Button';
+import { TextInput } from '../components/ui/Input';
 
 function Signup() {
   const [name, setName] = useState('');
@@ -26,59 +29,147 @@ function Signup() {
     setLoading(false);
   };
 
+  const benefits = [
+    'AI-powered resume screening',
+    'Bulk resume analysis',
+    'AI interview assistant',
+    'Detailed candidate reports',
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow p-8 w-96">
-        <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">AI Recruiter</h2>
-        <p className="text-gray-500 text-center mb-6">Create your HR account</p>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: '#0f0a2e' }}>
+      <div className="absolute top-0 -right-20 w-96 h-96 rounded-full filter blur-3xl opacity-30 animate-pulse-slow" style={{ background: '#ec4899' }} />
+      <div className="absolute bottom-0 -left-20 w-96 h-96 rounded-full filter blur-3xl opacity-30 animate-pulse-slow" style={{ background: '#8b5cf6' }} />
+      <div className="absolute top-1/2 left-1/3 w-96 h-96 rounded-full filter blur-3xl opacity-20" style={{ background: '#7c3aed' }} />
 
-        {error && (
-          <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg mb-4 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSignup}>
-          <input
-            type="text"
-            placeholder="Full Name"
-            className="w-full border rounded-lg px-4 py-2 mb-4"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border rounded-lg px-4 py-2 mb-4"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full border rounded-lg px-4 py-2 mb-4"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50"
+      <div className="relative w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center animate-slide-up">
+        {/* Left side - benefits */}
+        <div className="hidden md:block px-4">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+            style={{
+              background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+              boxShadow: '0 10px 40px rgba(139,92,246,0.40)',
+            }}
           >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
+            <Sparkles size={28} className="text-white" />
+          </div>
+          <h1 className="text-4xl font-bold leading-tight text-white">
+            Hire smarter,<br />
+            <span style={{ color: '#c4b5fd' }}>not harder.</span>
+          </h1>
+          <p className="text-purple-200 mt-4 text-lg">
+            Join HR teams using AI to find the right candidates, faster.
+          </p>
+          <ul className="mt-8 space-y-3">
+            {benefits.map((b) => (
+              <li key={b} className="flex items-center gap-3 text-purple-100">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(139,92,246,0.30)' }}
+                >
+                  <Check size={14} className="text-white" />
+                </div>
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        <p className="text-center text-gray-500 mt-4 text-sm">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 font-bold hover:underline">
-            Login
-          </Link>
-        </p>
+        {/* Right side - form */}
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: 'rgba(26,16,64,0.85)',
+            border: '1px solid rgba(139,92,246,0.25)',
+            boxShadow: '0 10px 40px rgba(139,92,246,0.20)',
+            backdropFilter: 'blur(16px)',
+          }}
+        >
+          <div className="md:hidden flex flex-col items-center mb-6">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+              style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+            >
+              <Sparkles size={24} className="text-white" />
+            </div>
+            <h1 className="text-xl font-bold text-white">AI Recruiter</h1>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-white">Create your account</h2>
+            <p className="text-sm text-purple-300 mt-1">
+              Start screening resumes with AI in minutes
+            </p>
+          </div>
+
+          {error && (
+            <div
+              className="flex items-start gap-2 px-4 py-3 rounded-lg mb-5 text-sm"
+              style={{
+                background: 'rgba(239,68,68,0.15)',
+                color: '#fca5a5',
+                border: '1px solid rgba(239,68,68,0.30)',
+              }}
+            >
+              <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSignup} className="space-y-4">
+            <TextInput
+              type="text"
+              label="Full name"
+              placeholder="Jane Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              icon={User}
+              required
+            />
+            <TextInput
+              type="email"
+              label="Work email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              icon={Mail}
+              required
+            />
+            <TextInput
+              type="password"
+              label="Password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              icon={Lock}
+              required
+              minLength={6}
+            />
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              loading={loading}
+              iconRight={!loading ? ArrowRight : undefined}
+              className="w-full mt-2"
+            >
+              {loading ? 'Creating account...' : 'Create account'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-purple-300 mt-6">
+            Already have an account?{' '}
+            <Link
+              to="/login"
+              className="font-semibold hover:underline"
+              style={{ color: '#a78bfa' }}
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
